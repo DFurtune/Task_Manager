@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useUpdateTask } from "./api";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const schema = z.object({
     title: z.string().min(1),
@@ -20,6 +21,7 @@ interface Props {
 
 export const EditTaskForm = ({ task, onSuccess }: Props) => {
     const updateTask = useUpdateTask()
+    const { toast } = useToast()
 
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
@@ -36,8 +38,19 @@ export const EditTaskForm = ({ task, onSuccess }: Props) => {
         },
             {
                 onSuccess: () => {
+                    toast({
+                        title: 'Task updated',
+                        description: "Changes saved successfully.",
+                    })
                     form.reset(values)
                     onSuccess?.()
+                },
+                onError: () => {
+                    toast({
+                        title: 'Error',
+                        description: 'Failed to update task.',
+                        variant: 'destructive',
+                    })
                 }
             })
     }
