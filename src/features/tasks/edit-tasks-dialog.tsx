@@ -3,14 +3,17 @@ import type { Task } from "./types"
 import { Button } from "@/components/ui/button"
 import { Pencil } from "lucide-react"
 import { EditTaskForm } from './edit-task-form'
+import { useState } from "react"
 
 interface Props {
     task: Task
 }
 
 export const EditTaskDialog = ({ task }: Props) => {
+    const [open, setOpen] = useState(false)
+    
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Edit task">
                     <Pencil className="h-4 w-4" />
