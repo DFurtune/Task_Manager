@@ -3,6 +3,7 @@ import { useDeleteTask } from "./api"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface Props {
     taskId: string
@@ -11,10 +12,24 @@ interface Props {
 export const DeleteTaskDialog = ({ taskId }: Props) => {
     const [open, setOpen] = useState(false)
     const deleteTask = useDeleteTask()
+    const { toast } = useToast()
 
     const handleDelete = () => {
         deleteTask.mutate(taskId, {
-            onSuccess: () => setOpen(false)
+            onSuccess: () => {
+                toast({
+                    title: "Task deleted",
+                    description: 'The task was successfully removed.'
+                })
+                setOpen(false)
+            },
+            onError: () => {
+                toast({
+                    title: "Error",
+                    description: 'Failed to delete task.',
+                    variant: 'destructive',
+                })
+            }
         })
     }
 

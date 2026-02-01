@@ -5,9 +5,11 @@ import { taskSchema, type TaskFormValues } from "./schema"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
 
 export const CreateTaskForm = () => {
     const createTask = useCreateTask()
+    const { toast } = useToast()
 
     const form = useForm<TaskFormValues>({
         resolver: zodResolver(taskSchema),
@@ -26,7 +28,15 @@ export const CreateTaskForm = () => {
             categoryId: 'general',
             tags: [],
             createdAt: new Date().toISOString(),
-        })
+        },
+            {
+                onSuccess: () => {
+                    toast({
+                        title: 'Task created',
+                        description: 'New task added',
+                    })
+                }
+            })
         form.reset()
     }
 

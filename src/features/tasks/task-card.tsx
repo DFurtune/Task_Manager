@@ -20,7 +20,7 @@ export const TaskCard = ({ task }: Props) => {
             </CardHeader>
 
             <CardContent>
-                <p className="text-sm text-muted-foreground">{task.description || 'No descriprion'}</p>
+                <p className="text-sm text-muted-foreground">{task.description || 'No description'}</p>
             </CardContent>
         </Card>
     )
