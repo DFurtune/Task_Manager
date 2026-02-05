@@ -1,4 +1,4 @@
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import type { Task } from "./types"
 import { Button } from "@/components/ui/button"
 import { Pencil } from "lucide-react"
@@ -11,7 +11,7 @@ interface Props {
 
 export const EditTaskDialog = ({ task }: Props) => {
     const [open, setOpen] = useState(false)
-    
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -24,6 +24,7 @@ export const EditTaskDialog = ({ task }: Props) => {
                 <DialogHeader>
                     <DialogTitle>Edit task</DialogTitle>
                 </DialogHeader>
+                <DialogDescription>Please update task</DialogDescription>
 
                 <EditTaskForm task={task} onSuccess={() => setOpen(false)} />
             </DialogContent>
