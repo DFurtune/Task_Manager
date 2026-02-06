@@ -1,15 +1,3 @@
 {
-  "tasks": [
-    {
-      "id": "e806",
-      "title": "fdfdfbd",
-      "description": "",
-      "status": "todo",
-      "priority": "medium",
-      "dueDate": "",
-      "categoryId": "general",
-      "tags": [],
-      "createdAt": "2026-02-05T20:46:23.694Z"
-    }
-  ]
+  "tasks": []
 }
