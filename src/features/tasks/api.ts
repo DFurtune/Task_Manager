@@ -55,7 +55,25 @@ export const useUpdateTask = () => {
       const { data } = await apiClient.put<Task>(`/tasks/${task.id}`, task);
       return data;
     },
-    onSuccess: () => {
+    onMutate: async (updatedTask) => {
+      await queryClient.cancelQueries({ queryKey: TASKS_KEY });
+
+      const previousTasks = queryClient.getQueryData<Task[]>(TASKS_KEY);
+
+      queryClient.setQueryData<Task[]>(TASKS_KEY, (old = []) =>
+        old.map((task) =>
+          task.id === updatedTask.id ? { ...task, ...updatedTask } : task,
+        ),
+      );
+
+      return { previousTasks };
+    },
+
+    onError: (_err, _updatedTask, context) => {
+      queryClient.setQueryData(TASKS_KEY, context?.previousTasks);
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: TASKS_KEY });
     },
   });
@@ -63,7 +81,7 @@ export const useUpdateTask = () => {
 
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
-  const {toast} = useToast()
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -89,14 +107,14 @@ export const useDeleteTask = () => {
         title: "Error",
         description: "Failed to delete task",
         variant: "destructive",
-      })
+      });
     },
 
     onSuccess: () => {
       toast({
         title: "Task deleted",
         description: "The task was successfully removed.",
-      })
+      });
     },
 
     onSettled: () => {
