@@ -15,7 +15,7 @@ export const TaskCard = ({ task }: Props) => {
 
                 <div className="flex items-center gap-2">
                     <EditTaskDialog task={task} />
-                    <DeleteTaskDialog taskId={task.id} />
+                    <DeleteTaskDialog task={task} />
                 </div>
             </CardHeader>
 

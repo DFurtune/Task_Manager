@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { Task } from "./types"
 import { useDeleteTask } from "./api"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -6,31 +7,30 @@ import { Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Props {
-    taskId: string
+    task: Task
 }
 
-export const DeleteTaskDialog = ({ taskId }: Props) => {
+export const DeleteTaskDialog = ({ task }: Props) => {
     const [open, setOpen] = useState(false)
-    const deleteTask = useDeleteTask()
+    const { deleteTask } = useDeleteTask()
     const { toast } = useToast()
 
-    const handleDelete = () => {
-        deleteTask.mutate(taskId, {
-            onSuccess: () => {
-                toast({
-                    title: "Task deleted",
-                    description: 'The task was successfully removed.'
-                })
-                setOpen(false)
-            },
-            onError: () => {
-                toast({
-                    title: "Error",
-                    description: 'Failed to delete task.',
-                    variant: 'destructive',
-                })
-            }
+    const handleDelete = () => {        
+        if (!task?.id) return
+
+        const undo = deleteTask(task)
+
+        toast({
+            title: "Task deleted",
+            description: "You can undo this action.",
+            action: (
+                <Button variant="outline" size="sm" onClick={undo}>
+                    Undo
+                </Button>
+            )
         })
+
+        setOpen(false)
     }
 
     return (
@@ -49,10 +49,11 @@ export const DeleteTaskDialog = ({ taskId }: Props) => {
                 <p className="text-sm text-muted-foreground">This action cannot be undone</p>
 
                 <div className="flex justify-end gap-2 mt-4">
-                    <Button variant='outline' onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button variant='destructive' onClick={handleDelete} disabled={deleteTask.isPending}>{deleteTask.isPending ? "Deleting..." : 'Delete'}</Button>
+                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button type="button" variant="destructive" onClick={handleDelete}>Delete</Button>
                 </div>
             </DialogContent>
         </Dialog>
     )
 }
+
