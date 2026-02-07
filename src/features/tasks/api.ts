@@ -1,9 +1,9 @@
 import { apiClient } from "@/shared/api/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Task } from "./types";
-import { useToast } from "@/hooks/use-toast";
 
 const TASKS_KEY = ["tasks"];
+const DELETE_DELAY = 5000;
 
 export const useTasks = () => {
   return useQuery({
@@ -81,44 +81,38 @@ export const useUpdateTask = () => {
 
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  return useMutation({
-    mutationFn: async (id: string) => {
-      await apiClient.delete(`/tasks/${id}`);
-    },
-
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: TASKS_KEY });
-
-      const previousTasks = queryClient.getQueryData<Task[]>(TASKS_KEY);
+  return {
+    deleteTask(task: Task) {
+      if (!task?.id) {
+        return () => {};
+      }
 
       queryClient.setQueryData<Task[]>(TASKS_KEY, (old = []) =>
-        old.filter((task) => task.id !== id),
+        old.filter((t): t is Task => Boolean(t) && t.id !== task.id),
       );
 
-      return { previousTasks };
-    },
+      const timer = setTimeout(async () => {
+        await apiClient.delete(`/tasks/${task.id}`);
+        queryClient.invalidateQueries({ queryKey: TASKS_KEY });
+        timers.delete(task.id);
+      }, DELETE_DELAY);
 
-    onError: (_err, _id, context) => {
-      queryClient.setQueryData(TASKS_KEY, context?.previousTasks);
+      timers.set(task.id, timer);
 
-      toast({
-        title: "Error",
-        description: "Failed to delete task",
-        variant: "destructive",
-      });
-    },
+      return () => {
+        const timer = timers.get(task.id);
+        if (!timer) return;
 
-    onSuccess: () => {
-      toast({
-        title: "Task deleted",
-        description: "The task was successfully removed.",
-      });
-    },
+        clearTimeout(timer);
+        timers.delete(task.id);
 
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: TASKS_KEY });
+        queryClient.setQueryData<Task[]>(TASKS_KEY, (old = []) => {
+          if (old.some((t) => t?.id === task.id)) return old;
+          return [task, ...old.filter(Boolean)];
+        });
+      };
     },
-  });
+  };
 };
